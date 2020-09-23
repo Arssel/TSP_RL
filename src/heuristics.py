@@ -9,6 +9,8 @@ def nearest_neighbour(distances):
     for bid in np.arange(bsz):
         last_point = np.random.randint(0, n)
         route = np.array([last_point], dtype=int)
+        sequence = []
+        sequence.append(route)
         n_range = np.arange(n)
         not_visited = n_range[n_range != last_point]
         for i in range(1,n):
@@ -16,13 +18,15 @@ def nearest_neighbour(distances):
             route = np.concatenate((route, [new_point]))
             not_visited = not_visited[not_visited != new_point]
             last_point = new_point
+            sequence.append(route)
         routes[bid, :] = route
-    return path_distance(distances, routes), routes
+    return path_distance(distances, routes), routes, sequence
 
 def insert_heuristic(distances, insert_type='remote'):
     bsz, n, _ = distances.shape
     routes = np.zeros((bsz, n), dtype=int)
     n_range = np.arange(n)
+    
     for bid in np.arange(bsz):
         first_point = np.random.randint(0, n)
         not_visited = n_range[n_range != first_point]
@@ -32,15 +36,18 @@ def insert_heuristic(distances, insert_type='remote'):
             second_point = np.abs(distances[bid, first_point, :] - distances[bid, first_point, not_visited].min()).argmin()
         not_visited = not_visited[not_visited != second_point]
         route = np.array([first_point, second_point], dtype=int)
+        sequence = []
+        sequence.append(np.append(route, route[0]))
         for i in range(2,n):
             if insert_type == 'remote':
                 node = remotest_node(route, not_visited, distances[bid])
             else:
                 node = closest_node(route, not_visited, distances[bid])
             route = find_place_for_node(route, node, distances[bid])
+            sequence.append(np.append(route, route[0]))
             not_visited = not_visited[not_visited != node]
         routes[bid, :] = route
-    return path_distance(distances, routes), routes
+    return path_distance(distances, routes), routes, sequence
 
 def closest_node(route, not_visited, distances):
     min_index = -1

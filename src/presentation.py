@@ -60,11 +60,14 @@ def get_gif_animation(file_name, seq):
     fig = plt.figure(figsize=(8,8))
     ax = plt.axes(xlim=(0, 1), ylim=(0, 1))
 
-    p = seq[0]
+    p = seq[-1]
     camera = Camera(fig)
 
     for i in range(len(seq)):
-        lines = seq[i].to('cpu')
+        if seq[i].shape == (2,):
+            lines = seq[i].reshape(-1, 2)
+        else:
+            lines = seq[i]
         ax.scatter(p[:,0], p[:,1], c='b')
         plt.plot(lines[:,0], lines[:,1], c='b')
         plt.plot([lines[-1,0], lines[0,0]], [lines[-1,1], lines[0,1]],c='b')

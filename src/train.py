@@ -1,5 +1,5 @@
 from src.architectures import Actor, Critic
-from src.environment import TSPEnv_old, TSPEnv_one_batch, TSPEnv
+from src.environment import TSPEnv_one_batch, TSPEnv
 from src.utils import sample_nodes, path_distance
 
 import torch
