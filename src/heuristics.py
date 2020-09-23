@@ -63,7 +63,7 @@ def remotest_node(route, not_visited, distances):
     max_index = -1
     max_distance = 0
     for i in np.arange(len(route)):
-        i_dist = np.abs(distances[route[i], :] - distances[route[i], not_visited].min()).argmin()
+        i_dist = np.abs(distances[route[i], :] - distances[route[i], not_visited].max()).argmin()
         if distances[route[i], i_dist] > max_distance:
             max_index = i_dist
             max_distance = distances[route[i], i_dist]
