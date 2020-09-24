@@ -56,7 +56,7 @@ def permuted_dots_sequence(env, actor, T, device='cpu'):
             sequence.append(permuted_dots[0])
     return sequence
 
-def get_gif_animation(file_name, seq):
+def get_gif_animation(file_name, seq, interval):
     fig = plt.figure(figsize=(8,8))
     ax = plt.axes(xlim=(0, 1), ylim=(0, 1))
 
@@ -73,5 +73,27 @@ def get_gif_animation(file_name, seq):
         plt.plot([lines[-1,0], lines[0,0]], [lines[-1,1], lines[0,1]],c='b')
         camera.snap()
 
-    ani = camera.animate()
+    ani = camera.animate(interval=interval)
+    ani.save(file_name, writer = 'imagemagick')
+    
+def get_gif_animation_heuristics(file_name, seq, point_seq, intervals):
+    fig = plt.figure(figsize=(8,8))
+    ax = plt.axes(xlim=(0, 1), ylim=(0, 1))
+
+    p = seq[-1]
+    camera = Camera(fig)
+
+    for i in range(len(seq)):
+        if seq[i].shape == (2,):
+            lines = seq[i].reshape(-1, 2)
+        else:
+            lines = seq[i]
+        ax.scatter(p[:,0], p[:,1], c='b')
+        plt.plot(lines[:,0], lines[:,1], c='b')
+        plt.plot([lines[-1,0], lines[0,0]], [lines[-1,1], lines[0,1]],c='b')
+        if i < len(seq) - 1:
+            plt.scatter(point_seq[i][0], point_seq[i][1],c='r')
+        camera.snap()
+
+    ani = camera.animate(intervals)
     ani.save(file_name, writer = 'imagemagick')

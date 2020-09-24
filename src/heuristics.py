@@ -7,7 +7,9 @@ def nearest_neighbour(distances):
     bsz, n, _ = distances.shape
     routes = np.zeros((bsz, n), dtype=int)
     for bid in np.arange(bsz):
+        added_nodes = []
         last_point = np.random.randint(0, n)
+        added_nodes.append(last_point)
         route = np.array([last_point], dtype=int)
         sequence = []
         sequence.append(route)
@@ -18,9 +20,10 @@ def nearest_neighbour(distances):
             route = np.concatenate((route, [new_point]))
             not_visited = not_visited[not_visited != new_point]
             last_point = new_point
+            added_nodes.append(last_point)
             sequence.append(route)
         routes[bid, :] = route
-    return path_distance(distances, routes), routes, sequence
+    return path_distance(distances, routes), routes, sequence, added_nodes
 
 def insert_heuristic(distances, insert_type='remote'):
     bsz, n, _ = distances.shape
@@ -28,7 +31,9 @@ def insert_heuristic(distances, insert_type='remote'):
     n_range = np.arange(n)
     
     for bid in np.arange(bsz):
+        added_nodes = []
         first_point = np.random.randint(0, n)
+        added_nodes.append(first_point)
         not_visited = n_range[n_range != first_point]
         if insert_type == 'remote':
             second_point = np.abs(distances[bid, first_point, :] - distances[bid, first_point, not_visited].max()).argmin()
@@ -36,6 +41,7 @@ def insert_heuristic(distances, insert_type='remote'):
             second_point = np.abs(distances[bid, first_point, :] - distances[bid, first_point, not_visited].min()).argmin()
         not_visited = not_visited[not_visited != second_point]
         route = np.array([first_point, second_point], dtype=int)
+        added_nodes.append(second_point)
         sequence = []
         sequence.append(np.append(route, route[0]))
         for i in range(2,n):
@@ -43,11 +49,12 @@ def insert_heuristic(distances, insert_type='remote'):
                 node = remotest_node(route, not_visited, distances[bid])
             else:
                 node = closest_node(route, not_visited, distances[bid])
+            added_nodes.append(node)
             route = find_place_for_node(route, node, distances[bid])
             sequence.append(np.append(route, route[0]))
             not_visited = not_visited[not_visited != node]
         routes[bid, :] = route
-    return path_distance(distances, routes), routes, sequence
+    return path_distance(distances, routes), routes, sequence, added_nodes
 
 def closest_node(route, not_visited, distances):
     min_index = -1
@@ -62,11 +69,11 @@ def closest_node(route, not_visited, distances):
 def remotest_node(route, not_visited, distances):
     max_index = -1
     max_distance = 0
-    for i in np.arange(len(route)):
-        i_dist = np.abs(distances[route[i], :] - distances[route[i], not_visited].max()).argmin()
-        if distances[route[i], i_dist] > max_distance:
-            max_index = i_dist
-            max_distance = distances[route[i], i_dist]
+    for i in not_visited:
+        i_dist = distances[i, route].min()
+        if i_dist > max_distance:
+            max_index = i
+            max_distance = i_dist
     return max_index
 
 def find_place_for_node(route, node, distances):
