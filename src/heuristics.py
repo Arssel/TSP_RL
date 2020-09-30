@@ -125,7 +125,10 @@ def compute_distance(distance_matrix, eps=1e-5, time_limit=1):
     
     routing.SetArcCostEvaluatorOfAllVehicles(transit_callback_index)
     search_parameters = pywrapcp.DefaultRoutingSearchParameters()
-    search_parameters.time_limit.seconds = time_limit
+    if time_limit < 1:
+        search_parameters.time_limit.FromMilliseconds(int(time_limit*1000))
+    else:
+        search_parameters.time_limit.seconds = time_limit
     search_parameters.local_search_metaheuristic = (
         routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH)
     search_parameters.first_solution_strategy = (
